@@ -1,0 +1,28 @@
+.form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  border-radius: 10px;
+  background: white;
+  -webkit-box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
+}
+
+.form select, .form input {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid rgb(235, 235, 235);
+  margin: 0 8px;
+}
+
+.form input {
+  width: 300px;
+}
+
+.form input:focus {
+  outline: none;
+  border: 1px solid rgb(100, 162, 255);
+  box-shadow: 0 0 5px rgb(100, 162, 255);
+}

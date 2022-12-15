@@ -1,0 +1,47 @@
+.temp {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4rem;
+}
+
+.date {
+  text-transform: uppercase;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #729C9A;
+}
+
+.average {
+  font-size: 6rem;
+  line-height: 0.7;
+  font-weight: bold;
+  color: #fff;
+}
+
+.average sup {
+  font-size: 1.5rem;
+  vertical-align: top;
+}
+
+.days {
+  display: flex;
+  gap: 2rem;
+}
+
+.days div {
+  text-align: center;
+  font-weight: bold;
+  font-size: .8rem;
+  text-transform: uppercase;
+}
+
+.day {
+  color: #729C9A;
+}
+
+.day_temp {
+  color: white;
+  font-size: 1.2rem;
+}
