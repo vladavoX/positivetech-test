@@ -15,7 +15,7 @@ export default function Home() {
   })
 
   const fetchData = async () => { 
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${location.city},${location.country}&appid=e9095696e2e59a039bb0d220cf6c1743`)
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${location.city},${location.country}&appid=${process.env.NEXT_PUBLIC_ENV_LOCAL_VARIABLE}`)
     const data = await res.json()
     setData(data)
     setLoading(false)
