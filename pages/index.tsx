@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Head from 'next/head'
+import { TailSpin } from 'react-loader-spinner'
 
 import styles from '../styles/Home.module.css'
 import Input from '../components/Input'
@@ -73,14 +74,16 @@ export default function Home() {
   }
   
   const fetchData = async () => { 
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${location.city},${location.country}&appid=${process.env.NEXT_PUBLIC_ENV_LOCAL_VARIABLE}`)
-    const data = await res.json()
-    setData(data)
-    setLoading(false)
-    dailyAverageTemp(data)
-    calcPropotion()
-    console.log(dailyTemps)
-    console.log(temps)
+    try {
+      const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${location.city},${location.country}&appid=${process.env.NEXT_PUBLIC_ENV_LOCAL_VARIABLE}`)
+      const data = await res.json()
+      setData(data)
+      setLoading(false)
+      dailyAverageTemp(data)
+      calcPropotion()
+    } catch (error) {
+      console.log(error)
+    }
   }
   
   const handleSubmit = (e: { preventDefault: () => void }) => {
@@ -99,7 +102,10 @@ export default function Home() {
       </Head>
       <main className={`${styles.main} bg`}>
         <Input handleSubmit={handleSubmit} setLocation={setLocation} />
-        {data && (
+        {loading && (
+          <TailSpin color='#000' />
+        )}
+        {!loading && data && (
           <Temperatures data={data} />
         )}
       </main>
