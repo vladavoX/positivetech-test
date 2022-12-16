@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Head from 'next/head'
-import Image from 'next/image'
 
 import styles from '../styles/Home.module.css'
 import Input from '../components/Input'
@@ -14,13 +13,76 @@ export default function Home() {
     country: 'GB',
   })
 
+  const leftColor = [15, 75, 148]
+  const midColor = [155, 220, 254]
+  const rightColor = [254, 148, 88]
+
+  let dailyTemps: number[] = []
+  let temps: number[] = []
+  let propotion: number = 0
+  let interpolatedColor: number[] = []
+  let hexColors: string[] = []
+
+  const dailyAverageTemp = (data: any) => {
+    let array: any[] = []
+    for(let i=0; i<data.list.length; i++) {
+      let date = data.list[i].dt_txt.split(' ')[0]
+      if (data.list[i+1] && data.list[i+1].dt_txt.includes(date)) {
+        array.push(data.list[i].main.temp)
+      }
+      if (data.list[i+1] && !data.list[i+1].dt_txt.includes(date)) {
+        array.push(data.list[i].main.temp)
+        dailyTemps.push(array.reduce((a: number, b: number) => a + b) / array.length)
+        array = []
+      }
+    }
+    dailyTemps = dailyTemps.map((temp: number) => Math.trunc(temp - 273.15))
+
+    temps.push(Math.min(...dailyTemps))
+    temps.push(Math.max(...dailyTemps))
+  }
+  
+  const calcPropotion = () => {
+    for(let i=0; i<temps.length; i++) {
+      console.log(temps[i])
+      if (temps[i] <= 0) {
+        propotion = (temps[i] - (-40)) / (0 - (-40))
+        interpolatedColor = [
+          Math.trunc(lerp(leftColor[0], midColor[0], propotion)),
+          Math.trunc(lerp(leftColor[1], midColor[1], propotion)),
+          Math.trunc(lerp(leftColor[2], midColor[2], propotion))
+        ]
+        hexColors.push('#' + ((1 << 24) + (interpolatedColor[0] << 16) + (interpolatedColor[1] << 8) + interpolatedColor[2]).toString(16).slice(1))
+      } else {
+        propotion = (temps[i] - 0) / (40 - 0)
+        interpolatedColor = [
+          Math.trunc(lerp(midColor[0], rightColor[0], propotion)),
+          Math.trunc(lerp(midColor[1], rightColor[1], propotion)),
+          Math.trunc(lerp(midColor[2], rightColor[2], propotion))
+        ]
+        hexColors.push('#' + ((1 << 24) + (interpolatedColor[0] << 16) + (interpolatedColor[1] << 8) + interpolatedColor[2]).toString(16).slice(1))
+      }
+    }
+
+    const bg = document.querySelector('.bg') as HTMLElement
+    bg.style.background = `linear-gradient(to right, ${hexColors[0]}, ${hexColors[1]})`
+  }
+  
+  const lerp = (a: number, b: number, p: number) => {
+    return a + (b - a) * p
+  }
+  
   const fetchData = async () => { 
     const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${location.city},${location.country}&appid=${process.env.NEXT_PUBLIC_ENV_LOCAL_VARIABLE}`)
     const data = await res.json()
     setData(data)
     setLoading(false)
+    dailyAverageTemp(data)
+    calcPropotion()
+    console.log(dailyTemps)
+    console.log(temps)
   }
-
+  
   const handleSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault()
     setLoading(true)
@@ -35,7 +97,7 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={styles.main}>
+      <main className={`${styles.main} bg`}>
         <Input handleSubmit={handleSubmit} setLocation={setLocation} />
         {data && (
           <Temperatures data={data} />

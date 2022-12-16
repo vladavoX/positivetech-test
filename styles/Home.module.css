@@ -5,4 +5,8 @@
   align-items: center;
   padding: 6rem;
   min-height: 100vh;
+
+  background-image: linear-gradient(to right bottom,
+  #D0E7F7,
+  #fff0cd);
 }
