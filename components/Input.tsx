@@ -1,7 +1,7 @@
 import styles from '../styles/Input.module.css'
 
 interface Props {
-  handleSubmit: (e: { preventDefault: () => void }) => void,
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void,
   setLocation: React.Dispatch<React.SetStateAction<{
     city: string;
     country: string;

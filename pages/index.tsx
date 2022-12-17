@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import { TailSpin } from 'react-loader-spinner'
 
@@ -7,8 +7,10 @@ import Input from '../components/Input'
 import Temperatures from '../components/Temperatures'
 
 export default function Home() {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState<boolean>(false)
   const [data, setData] = useState(null)
+  const [dailyTemps, setDailyTemps] = useState<number[]>([])
+  const [tempsMinMax, setTempsMinMax] = useState<number[]>([])
   const [location, setLocation] = useState({
     city: '',
     country: 'GB',
@@ -18,34 +20,58 @@ export default function Home() {
   const midColor = [155, 220, 254]
   const rightColor = [254, 148, 88]
 
-  let dailyTemps: number[] = []
-  let temps: number[] = []
   let propotion: number = 0
   let interpolatedColor: number[] = []
   let hexColors: string[] = []
 
-  const dailyAverageTemp = (data: any) => {
-    let array: any[] = []
-    for(let i=0; i<data.list.length; i++) {
-      let date = data.list[i].dt_txt.split(' ')[0]
-      if (data.list[i+1] && data.list[i+1].dt_txt.includes(date)) {
-        array.push(data.list[i].main.temp)
-      }
-      if (data.list[i+1] && !data.list[i+1].dt_txt.includes(date)) {
-        array.push(data.list[i].main.temp)
-        dailyTemps.push(array.reduce((a: number, b: number) => a + b) / array.length)
-        array = []
-      }
-    }
-    dailyTemps = dailyTemps.map((temp: number) => Math.trunc(temp - 273.15))
-
-    temps.push(Math.min(...dailyTemps))
-    temps.push(Math.max(...dailyTemps))
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => { 
+    e.preventDefault()
+    setLoading(true)
+    fetchWeather()
   }
   
-  const calcPropotion = () => {
+  const fetchWeather = async () => {
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${location.city},${location.country}&appid=${process.env.NEXT_PUBLIC_ENV_LOCAL_VARIABLE}`)
+    const data = await res.json()
+    setData(data)
+  }
+
+  const dailyAverageTemp = (data: any) => {
+    let temps: number[] = []
+    for (let i = 0; i < data.list.length; i++) {
+      let date = data.list[i].dt_txt.split(' ')[0]
+      if (date === data.list[i + 1]?.dt_txt.split(' ')[0]) {
+        temps.push(data.list[i].main.temp)
+      } else {
+        temps.push(data.list[i].main.temp)
+        let average = temps.reduce((a, b) => a + b, 0) / temps.length - 273.15
+        setDailyTemps(prevState => [...prevState, Math.trunc(average)])
+        temps = []
+      }
+    }
+  }
+
+  useEffect(() => {
+    setDailyTemps([])
+    if (data) {
+      dailyAverageTemp(data)
+    }
+    setLoading(false)
+  }, [data])
+
+  useEffect(() => {
+    setTempsMinMax([])
+    if (dailyTemps.length > 0) {
+      setTempsMinMax([Math.min(...dailyTemps), Math.max(...dailyTemps)])
+    }
+  }, [loading])
+
+  useEffect(() => {
+    calcPropotion(tempsMinMax)
+  }, [tempsMinMax])
+
+  const calcPropotion = (temps: number[]) => { 
     for(let i=0; i<temps.length; i++) {
-      console.log(temps[i])
       if (temps[i] <= 0) {
         propotion = (temps[i] - (-40)) / (0 - (-40))
         interpolatedColor = [
@@ -64,32 +90,12 @@ export default function Home() {
         hexColors.push('#' + ((1 << 24) + (interpolatedColor[0] << 16) + (interpolatedColor[1] << 8) + interpolatedColor[2]).toString(16).slice(1))
       }
     }
-
     const bg = document.querySelector('.bg') as HTMLElement
     bg.style.background = `linear-gradient(to right, ${hexColors[0]}, ${hexColors[1]})`
   }
   
   const lerp = (a: number, b: number, p: number) => {
     return a + (b - a) * p
-  }
-  
-  const fetchData = async () => { 
-    try {
-      const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${location.city},${location.country}&appid=${process.env.NEXT_PUBLIC_ENV_LOCAL_VARIABLE}`)
-      const data = await res.json()
-      setData(data)
-      setLoading(false)
-      dailyAverageTemp(data)
-      calcPropotion()
-    } catch (error) {
-      console.log(error)
-    }
-  }
-  
-  const handleSubmit = (e: { preventDefault: () => void }) => {
-    e.preventDefault()
-    setLoading(true)
-    fetchData()
   }
 
   return (
@@ -106,7 +112,7 @@ export default function Home() {
           <TailSpin color='#000' />
         )}
         {!loading && data && (
-          <Temperatures data={data} />
+          <Temperatures data={data} dailyTemps={dailyTemps} />
         )}
       </main>
     </>
