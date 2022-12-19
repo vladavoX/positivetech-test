@@ -1,14 +1,21 @@
 import styles from '../styles/Input.module.css'
 
 interface Props {
-  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void,
+  fetchWeather: () => void
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>
   setLocation: React.Dispatch<React.SetStateAction<{
     city: string;
     country: string;
   }>>
 }
 
-function Input({ handleSubmit, setLocation }: Props) {
+const Input = ({ fetchWeather, setLoading, setLocation }: Props) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setLoading(true)
+    fetchWeather()
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => { 
     setLocation(prevState => ({
       ...prevState,

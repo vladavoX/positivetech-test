@@ -1,7 +1,8 @@
 .main {
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: center;
+  gap: 4rem;
   align-items: center;
   padding: 6rem;
   min-height: 100vh;
@@ -9,4 +10,12 @@
   background-image: linear-gradient(to right bottom,
   #D0E7F7,
   #fff0cd);
+}
+
+.error {
+  padding: 1rem 4rem;
+  background-color: #ffbcbc;
+  color: rgb(92, 92, 92);
+  font-weight: bold;
+  border-radius: 10px;
 }

@@ -8,6 +8,7 @@ import Temperatures from '../components/Temperatures'
 
 export default function Home() {
   const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<boolean>(false)
   const [data, setData] = useState(null)
   const [dailyTemps, setDailyTemps] = useState<number[]>([])
   const [tempsMinMax, setTempsMinMax] = useState<number[]>([])
@@ -23,17 +24,17 @@ export default function Home() {
   let propotion: number = 0
   let interpolatedColor: number[] = []
   let hexColors: string[] = []
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => { 
-    e.preventDefault()
-    setLoading(true)
-    fetchWeather()
-  }
   
   const fetchWeather = async () => {
     const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${location.city},${location.country}&appid=${process.env.NEXT_PUBLIC_ENV_LOCAL_VARIABLE}`)
     const data = await res.json()
+    if (data.cod === '404') {
+      setLoading(false)
+      setError(true)
+      return
+    }
     setData(data)
+    setError(false)
   }
 
   const dailyAverageTemp = (data: any) => {
@@ -107,12 +108,15 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={`${styles.main} bg`}>
-        <Input handleSubmit={handleSubmit} setLocation={setLocation} />
+        <Input fetchWeather={fetchWeather} setLoading={setLoading} setLocation={setLocation} />
         {loading && (
           <TailSpin color='#000' />
         )}
         {!loading && data && (
           <Temperatures data={data} dailyTemps={dailyTemps} />
+        )}
+        {error && (
+          <p className={styles.error}>Requested city does not exist in requested country!</p>
         )}
       </main>
     </>
