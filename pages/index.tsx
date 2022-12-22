@@ -20,10 +20,6 @@ export default function Home() {
   const leftColor = [15, 75, 148]
   const midColor = [155, 220, 254]
   const rightColor = [254, 148, 88]
-
-  let propotion: number = 0
-  let interpolatedColor: number[] = []
-  let hexColors: string[] = []
   
   const fetchWeather = async () => {
     const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${location.city},${location.country}&appid=${process.env.NEXT_PUBLIC_ENV_LOCAL_VARIABLE}`)
@@ -68,10 +64,13 @@ export default function Home() {
   }, [loading])
 
   useEffect(() => {
-    calcPropotion(tempsMinMax)
+    calcHexColors(tempsMinMax)
   }, [tempsMinMax])
 
-  const calcPropotion = (temps: number[]) => { 
+  const calcHexColors = (temps: number[]) => { 
+    let propotion: number
+    let interpolatedColor: number[]
+    let hexColors: string[] = []
     for(let i=0; i<temps.length; i++) {
       if (temps[i] <= 0) {
         propotion = (temps[i] - (-40)) / (0 - (-40))
@@ -95,9 +94,7 @@ export default function Home() {
     bg.style.background = `linear-gradient(to right, ${hexColors[0]}, ${hexColors[1]})`
   }
   
-  const lerp = (a: number, b: number, p: number) => {
-    return a + (b - a) * p
-  }
+  const lerp = (a: number, b: number, p: number) => a + (b - a) * p
 
   return (
     <>
